@@ -7,6 +7,8 @@ class Login {
     this.users = [];
     this.passwords = [];
     Object.keys(hash).map(k => ({k, v: hash[k]})).map(e => {
+      console.log(e.k);
+      console.log(e.v);
       this.users = this.users.concat([e.k]);
       this.passwords = this.passwords.concat([e.v]);
     });
