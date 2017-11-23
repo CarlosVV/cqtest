@@ -7,65 +7,81 @@ var _createClass = function () { function defineProperties(target, props) { for 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var Login = function () {
-  function Login(hash) {
-    var _this = this;
-
+  function Login(userRepository) {
     _classCallCheck(this, Login);
 
     this.sessions = [];
-    this.users = [];
-    this.passwords = [];
-    Object.keys(hash).map(function (k) {
-      return { k: k, v: hash[k] };
-    }).map(function (e) {
-      console.log(e.k);
-      console.log(e.v);
-      _this.users = _this.users.concat([e.k]);
-      _this.passwords = _this.passwords.concat([e.v]);
-    });
+    this.userRepository = userRepository;
   }
 
   _createClass(Login, [{
+    key: 'login',
+    value: function login(user, password) {
+      if (this.userRepository.checkPassword(user, password)) {
+        console.log('user ' + user + ' logged');
+        this.sessions.push(user);
+      }
+    }
+  }, {
     key: 'logout',
     value: function logout(user) {
-      var _this2 = this;
+      var _this = this;
 
       this.sessions.forEach(function (session, i) {
         if (session === user) {
-          _this2.sessions[i] = null;
+          console.log('user ' + user + ' logged out');
+          _this.sessions[i] = null;
         }
       });
       this.sessions = this.sessions.filter(function (session) {
         return session !== null;
       });
     }
-  }, {
-    key: 'login',
-    value: function login(user, password) {
-      var index = this.idx(user, this.users);
-      if (this.passwords[index] === password) {
-        this.sessions.push(user);
-      }
-    }
+  }]);
 
-    // Gets index of an element in an array
+  return Login;
+}();
 
-  }, {
-    key: 'idx',
-    value: function idx(element, array) {
-      var cont = 0;
+// This is used to manage user info
+
+
+var UserRepository = function () {
+  function UserRepository(hash) {
+    var _this2 = this;
+
+    _classCallCheck(this, UserRepository);
+
+    this.users = [];
+    this.passwords = [];
+    Object.keys(hash).map(function (k) {
+      return { k: k, v: hash[k] };
+    }).map(function (e) {
+      console.log('user: ' + e.k + ' password: ' + e.v);
+      _this2.users = _this2.users.concat([e.k]);
+      _this2.passwords = _this2.passwords.concat([e.v]);
+    });
+  }
+
+  // Checks if user exists
+
+
+  _createClass(UserRepository, [{
+    key: 'userExists',
+    value: function userExists(user) {
+      // Temp variable for storing the user if found
+      var temp = '';
       var _iteratorNormalCompletion = true;
       var _didIteratorError = false;
       var _iteratorError = undefined;
 
       try {
-        for (var _iterator = array[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+        for (var _iterator = this.users[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
           var i = _step.value;
 
-          if (i === element) {
-            return cont;
+          if (i === user) {
+            console.log('user: ' + user + ' exists');
+            temp = user;
           }
-          cont += 1;
         }
       } catch (err) {
         _didIteratorError = true;
@@ -82,53 +98,8 @@ var Login = function () {
         }
       }
 
-      return cont;
-    }
-  }]);
-
-  return Login;
-}();
-
-var User = function () {
-  function User() {
-    _classCallCheck(this, User);
-  }
-
-  _createClass(User, [{
-    key: 'userExists',
-
-    // Checks if user exists
-    value: function userExists(user) {
-      // Temp variable for storing the user if found
-      var temp = '';
-      var _iteratorNormalCompletion2 = true;
-      var _didIteratorError2 = false;
-      var _iteratorError2 = undefined;
-
-      try {
-        for (var _iterator2 = this.users[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-          var i = _step2.value;
-
-          if (i === user) {
-            temp = user;
-          }
-        }
-      } catch (err) {
-        _didIteratorError2 = true;
-        _iteratorError2 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion2 && _iterator2.return) {
-            _iterator2.return();
-          }
-        } finally {
-          if (_didIteratorError2) {
-            throw _iteratorError2;
-          }
-        }
-      }
-
       var exists = temp !== '' && temp === user;
+      if (temp === '') console.log('user: ' + user + ' does not exist');
       return exists;
     }
 
@@ -166,17 +137,61 @@ var User = function () {
     value: function updatePassword(user, oldPassword, newPassword) {
       // First we check if the user exists
       var user1 = '';
+      var _iteratorNormalCompletion2 = true;
+      var _didIteratorError2 = false;
+      var _iteratorError2 = undefined;
+
+      try {
+        for (var _iterator2 = this.users[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+          var i = _step2.value;
+
+          if (i === user) {
+            user1 = user;
+          }
+        }
+      } catch (err) {
+        _didIteratorError2 = true;
+        _iteratorError2 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion2 && _iterator2.return) {
+            _iterator2.return();
+          }
+        } finally {
+          if (_didIteratorError2) {
+            throw _iteratorError2;
+          }
+        }
+      }
+
+      if (user1 === user) {
+        var index = this.idx(user, this.users);
+        if (this.passwords[index] === oldPassword) {
+          this.passwords[index] = newPassword;
+          return true;
+        }
+      }
+      return false;
+    }
+
+    // Gets index of an element in an array
+
+  }, {
+    key: 'idx',
+    value: function idx(element, array) {
+      var cont = 0;
       var _iteratorNormalCompletion3 = true;
       var _didIteratorError3 = false;
       var _iteratorError3 = undefined;
 
       try {
-        for (var _iterator3 = this.users[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+        for (var _iterator3 = array[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
           var i = _step3.value;
 
-          if (i === user) {
-            user1 = user;
+          if (i === element) {
+            return cont;
           }
+          cont += 1;
         }
       } catch (err) {
         _didIteratorError3 = true;
@@ -193,18 +208,11 @@ var User = function () {
         }
       }
 
-      if (user1 === user) {
-        var index = this.idx(user, this.users);
-        if (this.passwords[index] === oldPassword) {
-          this.passwords[index] = newPassword;
-          return true;
-        }
-      }
-      return false;
+      return cont;
     }
   }]);
 
-  return User;
+  return UserRepository;
 }();
 
 var registeredUsers = {
@@ -213,12 +221,13 @@ var registeredUsers = {
   user3: 'pass3'
 };
 
-var login = new Login(registeredUsers);
-var user = new User();
+var userRepo = new UserRepository(registeredUsers);
+var login = new Login(userRepo);
 
-user.registerUser('user4', 'pass4');
+userRepo.registerUser('user4', 'pass4');
 login.login('user4', 'pass4');
-user.updatePassword('user3', 'pass3', 'pass5');
+
+userRepo.updatePassword('user3', 'pass3', 'pass5');
 login.login('user3', 'pass5');
 login.logout('user4');
 login.logout('user3');
