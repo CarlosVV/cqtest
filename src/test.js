@@ -23,6 +23,27 @@ class Login {
     this.sessions = this.sessions.filter(session => session !== null);
   }
 
+  login(user, password) {
+    let index = this.idx(user, this.users);
+    if (this.passwords[index] === password) {
+      this.sessions.push(user);
+    }
+  }
+
+  // Gets index of an element in an array
+  idx(element, array) {
+    let cont=0;
+    for (let i of array) {
+      if (i === element) {
+        return cont;
+      }
+      cont += 1;
+    }
+    return cont;
+  }
+}
+
+class User {
   // Checks if user exists
   userExists(user) {
     // Temp variable for storing the user if found
@@ -74,25 +95,6 @@ class Login {
     }
     return false;
   }
-
-  login(user, password) {
-    let index = this.idx(user, this.users);
-    if (this.passwords[index] === password) {
-      this.sessions.push(user);
-    }
-  }
-
-  // Gets index of an element in an array
-  idx(element, array) {
-    let cont=0;
-    for (let i of array) {
-      if (i === element) {
-        return cont;
-      }
-      cont += 1;
-    }
-    return cont;
-  }
 }
 
 let registeredUsers = {
@@ -102,10 +104,11 @@ let registeredUsers = {
 };
 
 let login = new Login(registeredUsers);
+let user = new User();
 
-login.registerUser('user4', 'pass4');
+user.registerUser('user4', 'pass4');
 login.login('user4', 'pass4');
-login.updatePassword('user3', 'pass3', 'pass5');
+user.updatePassword('user3', 'pass3', 'pass5');
 login.login('user3', 'pass5');
 login.logout('user4');
 login.logout('user3');
